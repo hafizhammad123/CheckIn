@@ -219,10 +219,28 @@ button:disabled{ cursor:not-allowed; }
   font-weight:500;
   display:flex; align-items:center; gap:10px;
   transition: all 300ms ease;
+  flex-wrap:wrap;
 }
 .geo-banner.warn{ background:var(--red-50); color:#a01226; border:1px solid rgba(224,56,76,0.18); }
 .geo-banner.ok{ background:var(--green-50); color:#0d7a4a; border:1px solid rgba(23,168,102,0.18); }
 .geo-banner.info{ background:var(--blue-50); color:var(--blue-700); border:1px solid rgba(47,102,224,0.16); }
+.geo-banner .banner-text{ flex:1; min-width:180px; }
+
+.btn-locate{
+  margin-left:auto;
+  padding:9px 18px;
+  border-radius:100px;
+  background:linear-gradient(155deg, var(--blue-500), var(--blue-700));
+  color:#fff;
+  font-size:12.5px;
+  font-weight:600;
+  white-space:nowrap;
+  box-shadow: 0 8px 18px -8px rgba(47,102,224,0.55);
+  transition: all 220ms var(--ease);
+  display:inline-flex; align-items:center; gap:7px;
+}
+.btn-locate:hover:not(:disabled){ transform:translateY(-1px); box-shadow:0 12px 22px -8px rgba(47,102,224,0.6); }
+.btn-locate:disabled{ opacity:0.55; box-shadow:none; transform:none; }
 
 /* ============================================================
    EMPLOYEE CARDS
@@ -373,6 +391,7 @@ button:disabled{ cursor:not-allowed; }
   .shell{ padding:18px 16px 60px; }
   .toast-stack{ left:16px; right:16px; max-width:none; }
   .radar-wrap{ justify-content:center; }
+  .btn-locate{ margin-left:0; width:100%; justify-content:center; }
 }
 </style>
 </head>
@@ -389,7 +408,7 @@ button:disabled{ cursor:not-allowed; }
         <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5Z" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 12l9-5M12 12v10M12 12L3 7" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
       </div>
       <div class="brand-text">
-        <div class="name">Meridian&nbsp;Workspace</div>
+        <div class="name">DigiTech&nbsp;Workspace</div>
         <div class="sub">Attendance &amp; Presence Console</div>
       </div>
     </div>
@@ -415,7 +434,7 @@ button:disabled{ cursor:not-allowed; }
             <div class="geo-desc">Attendance can only be marked while inside a 100&nbsp;m radius of the office premises.</div>
           </div>
           <div class="status-pill pill-locating" id="statusPill">
-            <span class="pulse"></span><span id="statusPillText">Locating…</span>
+            <span class="pulse"></span><span id="statusPillText">Location off</span>
           </div>
         </div>
 
@@ -454,13 +473,14 @@ button:disabled{ cursor:not-allowed; }
             </div>
             <div class="metric-row">
               <div class="metric-label">Verification status</div>
-              <div class="metric-value" id="verificationValue">Locating…</div>
+              <div class="metric-value" id="verificationValue">Not started</div>
             </div>
           </div>
         </div>
 
         <div class="geo-banner info" id="geoBanner">
-          <span>📡</span><span>Requesting your live location to verify office presence…</span>
+          <span>📍</span><span class="banner-text">Tap the button to allow location access and verify your presence at the office.</span>
+          <button class="btn-locate" id="enableLocationBtn">Enable Location</button>
         </div>
       </div>
 
@@ -534,6 +554,10 @@ function saveState(state){
 }
 let attendance = loadState(); // { EMP-001: { status, checkIn, checkOut } }
 
+/* Has the employee tapped "Enable Location" yet? Nothing touches
+   navigator.geolocation until this is true. */
+let geoRequested = false;
+
 /* ============================================================
    GEO MATH — Haversine distance + bearing
    ============================================================ */
@@ -557,7 +581,8 @@ function bearingBetween(lat1, lon1, lat2, lon2){
 }
 
 /* ============================================================
-   LIVE GEOLOCATION WATCH
+   LIVE GEOLOCATION WATCH — only starts after the employee taps
+   the "Enable Location" button (see wireEnableLocationButton)
    ============================================================ */
 let lastKnown = null; // { lat, lng, accuracy, distance, insideGeofence }
 let watchId = null;
@@ -622,14 +647,29 @@ function renderGeoUI(){
   const banner = document.getElementById('geoBanner');
   const userDot = document.getElementById('radarUserDot');
 
+  /* State 0 — employee hasn't tapped "Enable Location" yet */
+  if(!geoRequested){
+    pill.className = 'status-pill pill-locating';
+    pillText.textContent = 'Location off';
+    distanceValue.textContent = '—';
+    accuracyValue.textContent = '—';
+    verificationValue.textContent = 'Not started';
+    verificationValue.className = 'metric-value';
+    banner.className = 'geo-banner info';
+    banner.innerHTML = '<span>📍</span><span class="banner-text">Tap the button to allow location access and verify your presence at the office.</span><button class="btn-locate" id="enableLocationBtn">Enable Location</button>';
+    wireEnableLocationButton();
+    return;
+  }
+
   if(!lastKnown){
     pill.className = 'status-pill pill-locating';
     pillText.textContent = 'Locating…';
     distanceValue.textContent = '—';
     accuracyValue.textContent = '—';
     verificationValue.textContent = 'Locating…';
+    verificationValue.className = 'metric-value';
     banner.className = 'geo-banner info';
-    banner.innerHTML = '<span>📡</span><span>Requesting your live location to verify office presence…</span>';
+    banner.innerHTML = '<span>📡</span><span class="banner-text">Requesting your live location to verify office presence…</span>';
     return;
   }
 
@@ -641,7 +681,8 @@ function renderGeoUI(){
     verificationValue.textContent = 'Failed';
     verificationValue.className = 'metric-value bad';
     banner.className = 'geo-banner warn';
-    banner.innerHTML = '<span>⚠️</span><span>' + escapeHtml(lastKnown.error) + ' Please enable location permissions and reload.</span>';
+    banner.innerHTML = '<span>⚠️</span><span class="banner-text">' + escapeHtml(lastKnown.error) + ' Please enable location permissions and try again.</span><button class="btn-locate" id="enableLocationBtn">Try Again</button>';
+    wireEnableLocationButton();
     return;
   }
 
@@ -656,14 +697,14 @@ function renderGeoUI(){
     verificationValue.textContent = 'Verified';
     verificationValue.className = 'metric-value ok';
     banner.className = 'geo-banner ok';
-    banner.innerHTML = '<span>✅</span><span>Location verified — you are within the office premises. Attendance actions are enabled.</span>';
+    banner.innerHTML = '<span>✅</span><span class="banner-text">Location verified — you are within the office premises. Attendance actions are enabled.</span>';
   }else{
     pill.className = 'status-pill pill-outside';
     pillText.textContent = 'Outside office zone';
     verificationValue.textContent = 'Out of range';
     verificationValue.className = 'metric-value bad';
     banner.className = 'geo-banner warn';
-    banner.innerHTML = '<span>🚫</span><span>You are outside the office location. Attendance can only be marked from the office premises.</span>';
+    banner.innerHTML = '<span>🚫</span><span class="banner-text">You are outside the office location. Attendance can only be marked from the office premises.</span>';
   }
 
   // Place the radar dot: angle = bearing (office -> user), radius scaled by distance
@@ -675,6 +716,22 @@ function renderGeoUI(){
   userDot.setAttribute('cx', x.toFixed(1));
   userDot.setAttribute('cy', y.toFixed(1));
   userDot.setAttribute('fill', insideGeofence ? '#17a866' : '#e0384c');
+}
+
+/* Wires the click handler onto whichever "Enable Location" / "Try
+   Again" button is currently in the banner (it gets re-created on
+   every renderGeoUI() call, so it needs re-wiring each time). */
+function wireEnableLocationButton(){
+  const btn = document.getElementById('enableLocationBtn');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    this.disabled = true;
+    this.innerHTML = '<span class="spinner" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff;"></span>Requesting…';
+    geoRequested = true;
+    lastKnown = null;
+    renderGeoUI();
+    startGeoWatch();
+  });
 }
 
 /* ============================================================
@@ -905,10 +962,12 @@ tickClock();
 setInterval(tickClock, 1000);
 
 /* ============================================================
-   BOOT
+   BOOT — location is NOT requested automatically. The employee
+   must tap "Enable Location" in the geo card; only then does
+   startGeoWatch() run and the browser prompt for permission.
    ============================================================ */
-renderEmployees(); // initial render (buttons disabled until GPS resolves)
-startGeoWatch();
+renderEmployees(); // initial render (check-in/out disabled until GPS verified)
+wireEnableLocationButton(); // wire the button already in the initial HTML
 </script>
 </body>
 </html>
