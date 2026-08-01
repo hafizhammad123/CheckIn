@@ -106,6 +106,8 @@ button:disabled{ cursor:not-allowed; }
 .brand-text .name{ font-size:19px; font-weight:700; letter-spacing:-0.01em; line-height:1.1; }
 .brand-text .sub{ font-size:12.5px; color:var(--ink-500); font-weight:500; margin-top:2px; }
 
+.header-right{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+
 .time-block{
   display:flex; align-items:center; gap:20px;
   background:var(--glass);
@@ -118,6 +120,26 @@ button:disabled{ cursor:not-allowed; }
 .time-block .clock{ font-size:20px; font-weight:600; font-variant-numeric: tabular-nums; }
 .time-block .date{ font-size:12.5px; color:var(--ink-500); font-weight:500; }
 .time-block .divider{ width:1px; height:26px; background:var(--line); }
+
+/* ---------- Session / current-user pill ---------- */
+.session-pill{
+  display:flex; align-items:center; gap:10px;
+  background:var(--glass);
+  border:1px solid var(--glass-border);
+  backdrop-filter: blur(16px);
+  padding:7px 8px 7px 16px;
+  border-radius:100px;
+  box-shadow:var(--shadow-2);
+}
+.session-pill .who{ font-size:13px; font-weight:600; }
+.session-pill .who span{ color:var(--blue-600); }
+.session-pill .switch-btn{
+  font-size:12px; font-weight:600; color:var(--ink-500);
+  background:#fff; border:1px solid var(--line);
+  padding:6px 12px; border-radius:100px;
+  transition: all 200ms var(--ease);
+}
+.session-pill .switch-btn:hover{ color:var(--blue-600); border-color:var(--blue-500); }
 
 /* ---------- Grid ---------- */
 .grid{
@@ -259,7 +281,7 @@ button:disabled{ cursor:not-allowed; }
   border-radius:var(--radius-lg);
   padding:20px;
   box-shadow:var(--shadow-2);
-  transition: transform 260ms var(--ease), box-shadow 260ms var(--ease);
+  transition: transform 260ms var(--ease), box-shadow 260ms var(--ease), opacity 260ms var(--ease);
   position:relative;
   overflow:hidden;
 }
@@ -271,6 +293,8 @@ button:disabled{ cursor:not-allowed; }
   opacity:0; transition:opacity 260ms ease;
 }
 .emp-card.is-in::before{ opacity:1; background:linear-gradient(90deg, var(--green-600), transparent); }
+.emp-card.is-locked{ opacity:0.6; }
+.emp-card.is-locked:hover{ transform:none; box-shadow:var(--shadow-2); }
 
 .emp-head{ display:flex; align-items:center; gap:14px; }
 .avatar{
@@ -284,7 +308,7 @@ button:disabled{ cursor:not-allowed; }
 .avatar-cyan{ background:linear-gradient(155deg,#4bc6e8,#1b7fa8); }
 .avatar-sky{ background:linear-gradient(155deg,#63b6f7,#2765c9); }
 
-.emp-name{ font-weight:600; font-size:15.5px; }
+.emp-name{ font-weight:600; font-size:15.5px; display:flex; align-items:center; gap:6px; }
 .emp-id{ font-size:11.5px; color:var(--ink-500); margin-top:1px; }
 
 .emp-badge{
@@ -318,6 +342,13 @@ button:disabled{ cursor:not-allowed; }
 .btn-checkout{ background:#fff; color:var(--red-600); border:1.5px solid rgba(224,56,76,0.35); }
 .btn-checkout:hover:not(:disabled){ background:var(--red-50); }
 .btn:disabled{ opacity:0.42; box-shadow:none; transform:none; }
+
+.lock-note{
+  margin-top:12px;
+  font-size:11.5px;
+  color:var(--ink-500);
+  display:flex; align-items:center; gap:6px;
+}
 
 .spinner{
   width:14px; height:14px; border-radius:50%;
@@ -363,6 +394,73 @@ button:disabled{ cursor:not-allowed; }
 
 .sidebar-card + .sidebar-card{ margin-top:24px; }
 
+.sync-note{ margin-top:14px; font-size:11.5px; color:var(--ink-500); display:flex; align-items:center; gap:6px; }
+.sync-note.ok{ color:var(--green-600); }
+
+/* ============================================================
+   LOGIN MODAL
+   ============================================================ */
+.modal-overlay{
+  position:fixed; inset:0; z-index:1000;
+  background:rgba(13,23,48,0.55);
+  backdrop-filter: blur(6px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  animation: fadeIn 220ms ease;
+}
+@keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+.modal-card{
+  background:#fff;
+  border-radius:var(--radius-xl);
+  box-shadow:0 30px 80px -20px rgba(13,23,48,0.5);
+  width:100%; max-width:420px;
+  padding:30px;
+  animation: modalIn 300ms var(--ease);
+}
+@keyframes modalIn{ from{ opacity:0; transform:translateY(12px) scale(0.98); } to{ opacity:1; transform:translateY(0) scale(1); } }
+.modal-title{ font-family:'Poppins'; font-weight:700; font-size:19px; }
+.modal-desc{ font-size:13px; color:var(--ink-500); margin-top:6px; line-height:1.5; }
+
+.who-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:20px; }
+.who-btn{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  padding:16px 10px;
+  border:1.5px solid var(--line);
+  border-radius:var(--radius-md);
+  background:#fbfcfe;
+  transition: all 200ms var(--ease);
+}
+.who-btn:hover{ border-color:var(--blue-500); background:var(--blue-50); }
+.who-btn.selected{ border-color:var(--blue-500); background:var(--blue-50); box-shadow:0 0 0 3px rgba(59,123,240,0.15); }
+.who-btn .avatar{ width:44px; height:44px; font-size:14px; }
+.who-btn .who-name{ font-size:12.5px; font-weight:600; }
+
+.pin-row{ margin-top:18px; }
+.pin-row label{ font-size:12px; font-weight:600; color:var(--ink-500); }
+.pin-input{
+  width:100%; margin-top:8px;
+  padding:12px 14px;
+  border-radius:var(--radius-sm);
+  border:1.5px solid var(--line);
+  font-size:16px; letter-spacing:0.3em;
+  font-family:'JetBrains Mono', monospace;
+  text-align:center;
+}
+.pin-input:focus{ border-color:var(--blue-500); outline:none; }
+.pin-error{ font-size:12px; color:var(--red-600); margin-top:8px; min-height:16px; }
+
+.modal-submit{
+  width:100%; margin-top:16px;
+  padding:13px;
+  border-radius:var(--radius-sm);
+  background:linear-gradient(155deg, var(--blue-500), var(--blue-700));
+  color:#fff; font-weight:600; font-size:14px;
+  box-shadow:0 10px 20px -8px rgba(47,102,224,0.55);
+  transition: all 220ms var(--ease);
+}
+.modal-submit:hover:not(:disabled){ transform:translateY(-1px); }
+.modal-submit:disabled{ opacity:0.5; box-shadow:none; }
+
 /* ============================================================
    TOASTS
    ============================================================ */
@@ -392,12 +490,28 @@ button:disabled{ cursor:not-allowed; }
   .toast-stack{ left:16px; right:16px; max-width:none; }
   .radar-wrap{ justify-content:center; }
   .btn-locate{ margin-left:0; width:100%; justify-content:center; }
+  .who-grid{ grid-template-columns:1fr 1fr; }
 }
 </style>
 </head>
 <body>
 
 <div class="toast-stack" id="toastStack"></div>
+
+<!-- ============ LOGIN MODAL (who are you?) ============ -->
+<div class="modal-overlay" id="loginOverlay" style="display:none;">
+  <div class="modal-card">
+    <div class="modal-title">Who are you?</div>
+    <div class="modal-desc">Select your name and enter your PIN. You will only be able to mark attendance for yourself on this device.</div>
+    <div class="who-grid" id="whoGrid"></div>
+    <div class="pin-row">
+      <label for="pinInput">4-digit PIN</label>
+      <input type="password" inputmode="numeric" maxlength="4" class="pin-input" id="pinInput" placeholder="••••" />
+      <div class="pin-error" id="pinError"></div>
+    </div>
+    <button class="modal-submit" id="loginSubmitBtn" disabled>Continue</button>
+  </div>
+</div>
 
 <div class="shell">
 
@@ -412,12 +526,18 @@ button:disabled{ cursor:not-allowed; }
         <div class="sub">Attendance &amp; Presence Console</div>
       </div>
     </div>
-    <div class="time-block">
-      <div>
-        <div class="clock mono" id="liveClock">--:--:--</div>
+    <div class="header-right">
+      <div class="session-pill" id="sessionPill" style="display:none;">
+        <div class="who">Signed in as <span id="sessionUserName">—</span></div>
+        <button class="switch-btn" id="switchUserBtn">Switch</button>
       </div>
-      <div class="divider"></div>
-      <div class="date" id="liveDate">Loading date…</div>
+      <div class="time-block">
+        <div>
+          <div class="clock mono" id="liveClock">--:--:--</div>
+        </div>
+        <div class="divider"></div>
+        <div class="date" id="liveDate">Loading date…</div>
+      </div>
     </div>
   </header>
 
@@ -492,10 +612,10 @@ button:disabled{ cursor:not-allowed; }
     </div>
 
     <!-- RIGHT COLUMN / SIDEBAR -->
-    <div>
+    <!-- <div>
       <div class="card sidebar-card">
-        <div class="section-title"><span class="dot"></span>Today's Summary</div>
-        <div class="summary-grid">
+        <!-- <div class="section-title"><span class="dot"></span>Today's Summary</div> -->
+        <!-- <div class="summary-grid">
           <div class="stat-tile accent">
             <div class="stat-num" id="statPresent">0</div>
             <div class="stat-label">Present today</div>
@@ -512,11 +632,15 @@ button:disabled{ cursor:not-allowed; }
             <div class="stat-num mono" id="statHours">0h 0m</div>
             <div class="stat-label">Total working hours</div>
           </div>
-        </div>
+        </div> -->
 
         <div class="roster" id="rosterList"></div>
+
+        <div class="sync-note" id="syncNote">
+          <span>ℹ️</span><span>Google Sheet sync is not configured yet — see setup note in the script.</span>
+        </div>
       </div>
-    </div>
+    </div> -->
 
   </div>
 </div>
@@ -525,15 +649,35 @@ button:disabled{ cursor:not-allowed; }
 /* ============================================================
    CONFIG
    ============================================================ */
-const OFFICE = { lat: 24.9186228, lng: 67.0730234, radius: 100 }; // metres
+const OFFICE = {
+  lat: 24.921456,
+  lng: 67.072212,
+  radius: 100
+};
 const RADAR_MAX_RANGE = 260; // metres represented at the outer radar ring
 const RADAR_CENTER = 110, RADAR_OUTER_R = 95;
 
+/* ------------------------------------------------------------
+   GOOGLE SHEET WEBHOOK
+   ------------------------------------------------------------
+   1. Create a Google Sheet.
+   2. Extensions > Apps Script, paste the doPost() script that was
+      shared alongside this file, save it.
+   3. Deploy > New deployment > type "Web app" > "Execute as: Me"
+      > "Who has access: Anyone" > Deploy.
+   4. Copy the Web App URL it gives you and paste it below.
+   Until you paste a real URL here, attendance still works locally
+   (localStorage) but nothing is sent to Sheets.
+------------------------------------------------------------- */
+const GOOGLE_SHEET_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbx4IjSzm9yXbIDHZfqN0qANKGm5XlgL0Jv4ofVbU-jmiJdFszzqGxWiWUqSflrTXG7n/exec';
+
+/* Each employee has a 4-digit PIN so a person can only sign in as
+   themselves. CHANGE THESE before real use. */
 const EMPLOYEES = [
-  { id:'EMP-001', name:'Arham',  initials:'AR', avatarClass:'avatar-blue'   },
-  { id:'EMP-002', name:'Wasif',  initials:'WA', avatarClass:'avatar-indigo' },
-  { id:'EMP-003', name:'Moiz',   initials:'MO', avatarClass:'avatar-cyan'   },
-  { id:'EMP-004', name:'Mursil', initials:'MU', avatarClass:'avatar-sky'    },
+  { id:'EMP-001', name:'Arham',  initials:'AR', avatarClass:'avatar-blue',   pin:'1111' },
+  { id:'EMP-002', name:'Wasif',  initials:'WA', avatarClass:'avatar-indigo', pin:'2222' },
+  { id:'EMP-003', name:'Moiz',   initials:'MO', avatarClass:'avatar-cyan',   pin:'3333' },
+  { id:'EMP-004', name:'Mursil', initials:'MU', avatarClass:'avatar-sky',    pin:'4444' },
 ];
 
 /* ============================================================
@@ -542,6 +686,10 @@ const EMPLOYEES = [
 function todayKey(){
   const d = new Date();
   return 'attendance_' + d.getFullYear() + '-' + (d.getMonth()+1) + '-' + d.getDate();
+}
+function todayDateLabel(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function loadState(){
   try{
@@ -553,6 +701,23 @@ function saveState(state){
   localStorage.setItem(todayKey(), JSON.stringify(state));
 }
 let attendance = loadState(); // { EMP-001: { status, checkIn, checkOut } }
+
+/* ------------------------------------------------------------
+   CURRENT USER (who is signed in on this device/browser).
+   Stored in localStorage so each employee's own phone/PC only
+   ever lets them mark their own attendance. A different name
+   can only be selected after entering that employee's PIN.
+------------------------------------------------------------- */
+function loadCurrentUser(){
+  return localStorage.getItem('attendance_current_user');
+}
+function saveCurrentUser(empId){
+  localStorage.setItem('attendance_current_user', empId);
+}
+function clearCurrentUser(){
+  localStorage.removeItem('attendance_current_user');
+}
+let currentUser = loadCurrentUser();
 
 /* Has the employee tapped "Enable Location" yet? Nothing touches
    navigator.geolocation until this is true. */
@@ -735,6 +900,130 @@ function wireEnableLocationButton(){
 }
 
 /* ============================================================
+   LOGIN / SESSION — restricts each device to one employee at a
+   time. A different employee can only be selected after entering
+   that employee's own PIN.
+   ============================================================ */
+let pendingSelection = null;
+
+function getEmployee(empId){
+  return EMPLOYEES.find(e => e.id === empId);
+}
+
+function updateSessionBar(){
+  const pill = document.getElementById('sessionPill');
+  const nameEl = document.getElementById('sessionUserName');
+  if(currentUser && getEmployee(currentUser)){
+    pill.style.display = 'flex';
+    nameEl.textContent = getEmployee(currentUser).name;
+  }else{
+    pill.style.display = 'none';
+  }
+}
+
+function showLoginModal(){
+  const overlay = document.getElementById('loginOverlay');
+  const grid = document.getElementById('whoGrid');
+  pendingSelection = null;
+
+  grid.innerHTML = EMPLOYEES.map(emp => `
+    <button type="button" class="who-btn" data-emp="${emp.id}">
+      <div class="avatar ${emp.avatarClass}">${emp.initials}</div>
+      <div class="who-name">${emp.name}</div>
+    </button>
+  `).join('');
+
+  grid.querySelectorAll('.who-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      pendingSelection = btn.getAttribute('data-emp');
+      grid.querySelectorAll('.who-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('pinInput').value = '';
+      document.getElementById('pinError').textContent = '';
+      document.getElementById('pinInput').focus();
+      validateLoginForm();
+    });
+  });
+
+  document.getElementById('pinInput').value = '';
+  document.getElementById('pinError').textContent = '';
+  overlay.style.display = 'flex';
+}
+
+function hideLoginModal(){
+  document.getElementById('loginOverlay').style.display = 'none';
+}
+
+function validateLoginForm(){
+  const pin = document.getElementById('pinInput').value;
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  submitBtn.disabled = !(pendingSelection && pin.length === 4);
+}
+
+function wireLoginModal(){
+  const pinInput = document.getElementById('pinInput');
+  const submitBtn = document.getElementById('loginSubmitBtn');
+  const switchBtn = document.getElementById('switchUserBtn');
+
+  pinInput.addEventListener('input', ()=>{
+    pinInput.value = pinInput.value.replace(/\D/g,'').slice(0,4);
+    validateLoginForm();
+  });
+
+  submitBtn.addEventListener('click', ()=>{
+    const emp = getEmployee(pendingSelection);
+    const pin = pinInput.value;
+    if(!emp){ return; }
+    if(pin !== emp.pin){
+      document.getElementById('pinError').textContent = 'Incorrect PIN for ' + emp.name + '. Please try again.';
+      pinInput.value = '';
+      pinInput.focus();
+      return;
+    }
+    currentUser = emp.id;
+    saveCurrentUser(currentUser);
+    hideLoginModal();
+    updateSessionBar();
+    renderEmployees();
+    toast('success', 'Signed in', 'You are signed in as ' + emp.name + '. You can only mark your own attendance on this device.');
+  });
+
+  switchBtn.addEventListener('click', ()=>{
+    clearCurrentUser();
+    currentUser = null;
+    updateSessionBar();
+    renderEmployees();
+    showLoginModal();
+  });
+}
+
+/* ============================================================
+   GOOGLE SHEET LOGGING
+   ============================================================ */
+function sheetConfigured(){
+  return GOOGLE_SHEET_WEBHOOK_URL && !GOOGLE_SHEET_WEBHOOK_URL.includes('PASTE_YOUR');
+}
+function updateSyncNote(){
+  const note = document.getElementById('syncNote');
+  if(sheetConfigured()){
+    note.className = 'sync-note ok';
+    note.innerHTML = '';
+  }else{
+    note.className = 'sync-note';
+    note.innerHTML = '<span>ℹ️</span><span>Google Sheet sync is not configured yet — paste your Apps Script Web App URL into GOOGLE_SHEET_WEBHOOK_URL in the script.</span>';
+  }
+}
+function logToSheet(payload){
+  if(!sheetConfigured()) return;
+  fetch(GOOGLE_SHEET_WEBHOOK_URL, {
+    method:'POST',
+    mode:'no-cors', // Apps Script web apps don't return CORS headers; we fire-and-forget
+    headers: { 'Content-Type':'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  }).catch(()=>{ /* silent — attendance already saved locally */ });
+}
+
+/* ============================================================
    RENDER — Employee cards
    ============================================================ */
 function fmtTime(ts){
@@ -767,15 +1056,16 @@ function renderEmployees(){
     const isIn = rec.status === 'in';
     const workingMs = isIn ? (Date.now() - rec.checkIn) : (rec.checkOut ? rec.checkOut - rec.checkIn : null);
 
-    const checkInDisabled = isIn || !insideNow;
-    const checkOutDisabled = !isIn || !insideNow;
+    const isMine = currentUser === emp.id;
+    const checkInDisabled = !isMine || isIn || !insideNow;
+    const checkOutDisabled = !isMine || !isIn || !insideNow;
 
     return `
-      <div class="emp-card ${isIn ? 'is-in' : ''}" id="card-${emp.id}">
+      <div class="emp-card ${isIn ? 'is-in' : ''} ${isMine ? '' : 'is-locked'}" id="card-${emp.id}">
         <div class="emp-head">
           <div class="avatar ${emp.avatarClass}">${emp.initials}</div>
           <div>
-            <div class="emp-name">${emp.name}</div>
+            <div class="emp-name">${emp.name} ${isMine ? '' : '🔒'}</div>
             <div class="emp-id mono">${emp.id}</div>
           </div>
           <div class="emp-badge ${isIn ? 'badge-in' : 'badge-out'}">${isIn ? 'Checked In' : 'Checked Out'}</div>
@@ -800,6 +1090,7 @@ function renderEmployees(){
           <button class="btn btn-checkin" id="in-${emp.id}" ${checkInDisabled ? 'disabled' : ''}>Check In</button>
           <button class="btn btn-checkout" id="out-${emp.id}" ${checkOutDisabled ? 'disabled' : ''}>Check Out</button>
         </div>
+        ${isMine ? '' : '<div class="lock-note">🔒 Only ' + emp.name + ' can mark this attendance</div>'}
       </div>
     `;
   }).join('');
@@ -816,6 +1107,10 @@ function renderEmployees(){
    CHECK-IN / CHECK-OUT FLOWS
    ============================================================ */
 async function handleCheckIn(emp){
+  if(currentUser !== emp.id){
+    toast('error', 'Not allowed', 'You can only mark attendance for yourself.');
+    return;
+  }
   const btn = document.getElementById('in-' + emp.id);
   const outBtn = document.getElementById('out-' + emp.id);
   setBtnLoading(btn, 'Verifying…');
@@ -828,11 +1123,20 @@ async function handleCheckIn(emp){
       renderEmployees();
       return;
     }
-    attendance[emp.id] = { status:'in', checkIn: Date.now(), checkOut:null };
+    const ts = Date.now();
+    attendance[emp.id] = { status:'in', checkIn: ts, checkOut:null };
     saveState(attendance);
     renderEmployees();
     flashCard(emp.id);
-    toast('success', emp.name + ' checked in', 'Verified at the office premises · ' + fmtTime(Date.now()));
+    toast('success', emp.name + ' checked in', 'Verified at the office premises · ' + fmtTime(ts));
+
+    logToSheet({
+      action:'checkin',
+      empId: emp.id,
+      name: emp.name,
+      date: todayDateLabel(),
+      checkInTime: fmtTime(ts)
+    });
   }catch(err){
     toast('error', 'Location verification failed', err.message);
     renderEmployees();
@@ -840,6 +1144,10 @@ async function handleCheckIn(emp){
 }
 
 async function handleCheckOut(emp){
+  if(currentUser !== emp.id){
+    toast('error', 'Not allowed', 'You can only mark attendance for yourself.');
+    return;
+  }
   const btn = document.getElementById('out-' + emp.id);
   const inBtn = document.getElementById('in-' + emp.id);
   setBtnLoading(btn, 'Verifying…');
@@ -860,6 +1168,15 @@ async function handleCheckOut(emp){
     flashCard(emp.id);
     const total = fmtDuration(checkOut - rec.checkIn);
     toast('success', emp.name + ' checked out', 'Total working hours today: ' + total);
+
+    logToSheet({
+      action:'checkout',
+      empId: emp.id,
+      name: emp.name,
+      date: todayDateLabel(),
+      checkOutTime: fmtTime(checkOut),
+      hours: total
+    });
   }catch(err){
     toast('error', 'Location verification failed', err.message);
     renderEmployees();
@@ -965,9 +1282,17 @@ setInterval(tickClock, 1000);
    BOOT — location is NOT requested automatically. The employee
    must tap "Enable Location" in the geo card; only then does
    startGeoWatch() run and the browser prompt for permission.
+   A sign-in (name + PIN) is required before any check-in/out
+   button becomes usable.
    ============================================================ */
-renderEmployees(); // initial render (check-in/out disabled until GPS verified)
+updateSessionBar();
+updateSyncNote();
+renderEmployees(); // initial render (check-in/out disabled until signed in + GPS verified)
 wireEnableLocationButton(); // wire the button already in the initial HTML
+wireLoginModal();
+if(!currentUser || !getEmployee(currentUser)){
+  showLoginModal();
+}
 </script>
 </body>
 </html>
